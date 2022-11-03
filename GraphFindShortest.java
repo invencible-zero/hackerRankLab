@@ -10,14 +10,7 @@ public class GraphFindShortest {
 
     private static final Scanner scanner = new Scanner(System.in);
 
-    /*
-     * For the unweighted graph, <name>:
-     *
-     * 1. The number of nodes is <name>Nodes.
-     * 2. The number of edges is <name>Edges.
-     * 3. An edge exists between <name>From[i] to <name>To[i].
-     *
-     */
+    protected static int absolutLenght = Integer.MAX_VALUE;
     static int findShortest(int graphNodes, int[] graphFrom, int[] graphTo, long[] idColorsArray, int val) {
 
         int returnValue = -1;
@@ -58,8 +51,6 @@ public class GraphFindShortest {
         List<Node> graph = parseGraph(graphFrom, graphTo, idColorsArray);
         //graph.forEach(System.out::println);
 
-
-        int localLenght = Integer.MAX_VALUE;
         if (indexMatchColor.size() <= 1)
             return returnValue;
         else {
@@ -84,36 +75,35 @@ public class GraphFindShortest {
 
                     System.out.println(":: outerIteratorFinal :: " + outerIteratorFinal + ", indexMatchColor.get(outerIteratorFinal) :: " + (indexMatchColor.get(outerIteratorFinal) + 1));
                     System.out.println("????????????????????????????????? fromNode :: " + fromNode.getName() + ",  toNode :: " + toNode.getName());
-                    int tempLenght = calculateLenghtPath(fromNode, toNode, null, null);
+                    int tempLenght = calculateLenghtPath(fromNode, toNode, null, null, false);
                     System.out.println(":: innerIteratorFinal :: " + innerIteratorFinal + ", indexMatchColor.get(innerIteratorFinal) :: " + (indexMatchColor.get(innerIteratorFinal) + 1) + ", lenght :: " + tempLenght);
                     System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
                     innerIterator++;
 
-                    if (tempLenght != 0 && tempLenght < localLenght)
-                        localLenght = tempLenght;
+                    if (tempLenght != -1 && tempLenght != 0 && tempLenght < absolutLenght)
+                        absolutLenght = tempLenght;
                 }
                 outerIterator++;
             }
         }
 
-        if (localLenght != Integer.MAX_VALUE)
-            returnValue = localLenght;
+        if (absolutLenght != Integer.MAX_VALUE)
+            returnValue = absolutLenght;
 
         System.out.println(" returnValue :: " + returnValue);
         return returnValue;
     }
 
-    static int calculateLenghtPath(Node fromNode, Node toNode, Node parentDiscarded, Node childDiscarded) {
+    static int calculateLenghtPath(Node fromNode, Node toNode, Node parentDiscarded, Node childDiscarded, Boolean startWithParent) {
         int localLenghtPath = 0;
         UUID uuid = UUID.randomUUID();
 
 
         System.out.println(uuid + " >>> fromNode :: " + fromNode.getName() + ", toNode :: " + toNode.getName() + ", parentDiscarded :: " + (parentDiscarded != null ? parentDiscarded.getName() : "NULL") + ", childDiscarded :: " + (childDiscarded != null ? childDiscarded.getName() : "NULL"));
+        Boolean fullQueryInDepth = false;
+        Boolean fullQueryInHierarchy = false;
         if (parentDiscarded != fromNode && childDiscarded != fromNode) {
-
-
-            //Node pointer = fromNode;
 
             while (fromNode != toNode && localLenghtPath == 0 && fromNode.getChildren().size() != 0) {
                 for (Node child : fromNode.getChildren()) {
@@ -125,51 +115,79 @@ public class GraphFindShortest {
                             break;
                         }
                         if (child.getChildren().size() != 0) {
-                            int resultLenghtPath = calculateLenghtPath(child, toNode, parentDiscarded, childDiscarded);
-                            if (resultLenghtPath != 0)
+                            int resultLenghtPath = calculateLenghtPath(child, toNode, parentDiscarded, childDiscarded, true);
+
+                            if (resultLenghtPath == -1)
+                                return -1;
+
+                            if (resultLenghtPath != 0) {
                                 localLenghtPath = 1 + resultLenghtPath;
-                        }
-
-                        if (localLenghtPath == 0) {
-                            if (child.getParents().size() > 1) {
-                                for (Node parent : child.getParents()) {
-
-                                    if (parent.equals(toNode)) {
-                                        localLenghtPath += 2;
-                                        break;
-                                    }
-
-                                    System.out.println(uuid + " >>> parent :: " + parent.getName() + ", toNode :: " + toNode.getName() + ", pointer :: " + fromNode.getName());
-
-                                    int resultLenghtPath = calculateLenghtPath(parent, toNode, fromNode, child);
-                                    if (resultLenghtPath != 0)
-                                        localLenghtPath = 1 + resultLenghtPath;
-                                }
+                                if (localLenghtPath >= absolutLenght)
+                                    return -1;
                             }
                         }
+
+                        /*if (localLenghtPath == 0) {
+                            if (child.getParents().size() > 1) {
+                                for (Node parent : child.getParents()) {
+                                    if(!parent.equals(fromNode)) {
+                                        if (parent.equals(toNode)) {
+                                            localLenghtPath += 2;
+                                            if (localLenghtPath >= absolutLenght)
+                                                return -1;
+                                            break;
+                                        }
+
+                                        System.out.println(uuid + " >>> parent :: " + parent.getName() + ", toNode :: " + toNode.getName() + ", pointer :: " + fromNode.getName());
+
+                                        int resultLenghtPath = calculateLenghtPath(parent, toNode, fromNode, child, null);
+
+                                        if (resultLenghtPath == -1)
+                                            return -1;
+
+                                        if (resultLenghtPath != 0) {
+                                            localLenghtPath = 1 + resultLenghtPath;
+                                            if (localLenghtPath >= absolutLenght)
+                                                return -1;
+                                        }
+                                        fullQueryInHierarchy = true;
+                                    }
+                                }
+                            }
+                        }*/
                     }
 
                 }
-
+                fullQueryInDepth = true;
                 if (localLenghtPath == 0)
                     break;
 
             }
 
-            System.out.println(uuid + " ::::::::: localLenghtPath " + localLenghtPath);
+            System.out.println(uuid + " ::::::::: localLenghtPath " + localLenghtPath + " :: fullQueryInDepth " + fullQueryInDepth + " :: fullQueryInHierarchy " + fullQueryInHierarchy );
+            if(!startWithParent) {
+                while (fromNode != toNode && localLenghtPath == 0 && fromNode.getParents().size() != 0) {
+                    for (Node parent : fromNode.getParents()) {
+                            if (parent.equals(toNode)) {
+                                localLenghtPath++;
+                                if (localLenghtPath >= absolutLenght)
+                                    return -1;
+                                break;
+                            }
+                            if (parent.getChildren().size() != 0) {
+                                System.out.println(uuid + " >>> calculateLenghtPath(parent, toNode, fromNode, childDiscarded, null) ::: " + parent.getName() + " :: " + toNode.getName() + " :: NULL :: " + (fromNode != null ? fromNode.getName() : "NULL"));
+                                int resultLenghtPath = calculateLenghtPath(parent, toNode, null, fromNode, true);
 
-            while (fromNode != toNode && localLenghtPath == 0 && fromNode.getParents().size() != 0) {
-                for (Node parent : fromNode.getParents()) {
-                    if (parent.equals(toNode)) {
-                        localLenghtPath++;
-                        break;
-                    }
-                    if (parent.getChildren().size() != 0) {
-                        int resultLenghtPath = calculateLenghtPath(parent, toNode, fromNode, childDiscarded);
-                        if (resultLenghtPath != 0)
-                            localLenghtPath = 1 + resultLenghtPath;
-                    }
+                                if (resultLenghtPath == -1)
+                                    return -1;
 
+                                if (resultLenghtPath != 0) {
+                                    localLenghtPath = 1 + resultLenghtPath;
+                                    if (localLenghtPath >= absolutLenght)
+                                        return -1;
+                                }
+                            }
+                    }
                 }
             }
         }
@@ -189,11 +207,11 @@ public class GraphFindShortest {
         while (iterator < graphFrom.length) {
             final int iteratorFinal = iterator;
             Node fromNode = graph.stream()
-                    .filter(nodeLocal -> nodeLocal.getName() == graphFrom[iteratorFinal])
+                    .filter(nodeLocal -> nodeLocal.getName() == ( graphFrom[iteratorFinal]<=graphTo[iteratorFinal] ? graphFrom[iteratorFinal]: graphTo[iteratorFinal])      )
                     .collect(Collectors.toList()).get(0);
 
             Node toNode = graph.stream()
-                    .filter(nodeLocal -> nodeLocal.getName() == graphTo[iteratorFinal])
+                    .filter(nodeLocal -> nodeLocal.getName() == ( graphFrom[iteratorFinal]> graphTo[iteratorFinal] ? graphFrom[iteratorFinal]: graphTo[iteratorFinal])      )
                     .collect(Collectors.toList()).get(0);
 
             fromNode.getChildren().add(toNode);
