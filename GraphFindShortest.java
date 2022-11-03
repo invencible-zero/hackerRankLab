@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+//https://www.hackerrank.com/challenges/find-the-nearest-clone
+
 public class GraphFindShortest {
 
     // Complete the findShortest function below.
@@ -99,10 +101,9 @@ public class GraphFindShortest {
         int localLenghtPath = 0;
         UUID uuid = UUID.randomUUID();
 
-
         System.out.println(uuid + " >>> fromNode :: " + fromNode.getName() + ", toNode :: " + toNode.getName() + ", parentDiscarded :: " + (parentDiscarded != null ? parentDiscarded.getName() : "NULL") + ", childDiscarded :: " + (childDiscarded != null ? childDiscarded.getName() : "NULL"));
-        Boolean fullQueryInDepth = false;
-        Boolean fullQueryInHierarchy = false;
+
+
         if (parentDiscarded != fromNode && childDiscarded != fromNode) {
 
             while (fromNode != toNode && localLenghtPath == 0 && fromNode.getChildren().size() != 0) {
@@ -126,45 +127,14 @@ public class GraphFindShortest {
                                     return -1;
                             }
                         }
-
-                        /*if (localLenghtPath == 0) {
-                            if (child.getParents().size() > 1) {
-                                for (Node parent : child.getParents()) {
-                                    if(!parent.equals(fromNode)) {
-                                        if (parent.equals(toNode)) {
-                                            localLenghtPath += 2;
-                                            if (localLenghtPath >= absolutLenght)
-                                                return -1;
-                                            break;
-                                        }
-
-                                        System.out.println(uuid + " >>> parent :: " + parent.getName() + ", toNode :: " + toNode.getName() + ", pointer :: " + fromNode.getName());
-
-                                        int resultLenghtPath = calculateLenghtPath(parent, toNode, fromNode, child, null);
-
-                                        if (resultLenghtPath == -1)
-                                            return -1;
-
-                                        if (resultLenghtPath != 0) {
-                                            localLenghtPath = 1 + resultLenghtPath;
-                                            if (localLenghtPath >= absolutLenght)
-                                                return -1;
-                                        }
-                                        fullQueryInHierarchy = true;
-                                    }
-                                }
-                            }
-                        }*/
                     }
 
                 }
-                fullQueryInDepth = true;
                 if (localLenghtPath == 0)
                     break;
-
             }
 
-            System.out.println(uuid + " ::::::::: localLenghtPath " + localLenghtPath + " :: fullQueryInDepth " + fullQueryInDepth + " :: fullQueryInHierarchy " + fullQueryInHierarchy );
+            System.out.println(uuid + " ::::::::: localLenghtPath " + localLenghtPath );
             if(!startWithParent) {
                 while (fromNode != toNode && localLenghtPath == 0 && fromNode.getParents().size() != 0) {
                     for (Node parent : fromNode.getParents()) {
@@ -175,7 +145,7 @@ public class GraphFindShortest {
                                 break;
                             }
                             if (parent.getChildren().size() != 0) {
-                                System.out.println(uuid + " >>> calculateLenghtPath(parent, toNode, fromNode, childDiscarded, null) ::: " + parent.getName() + " :: " + toNode.getName() + " :: NULL :: " + (fromNode != null ? fromNode.getName() : "NULL"));
+                                System.out.println(uuid + " >>> calculateLenghtPath(parent, toNode, fromNode, childDiscarded, null) ::: " + parent.getName() + " :: " + toNode.getName() + " :: NULL :: " + fromNode.getName());
                                 int resultLenghtPath = calculateLenghtPath(parent, toNode, null, fromNode, true);
 
                                 if (resultLenghtPath == -1)
@@ -207,11 +177,11 @@ public class GraphFindShortest {
         while (iterator < graphFrom.length) {
             final int iteratorFinal = iterator;
             Node fromNode = graph.stream()
-                    .filter(nodeLocal -> nodeLocal.getName() == ( graphFrom[iteratorFinal]<=graphTo[iteratorFinal] ? graphFrom[iteratorFinal]: graphTo[iteratorFinal])      )
+                    .filter(nodeLocal -> nodeLocal.getName() ==  Math.min( graphFrom[iteratorFinal], graphTo[iteratorFinal])  )
                     .collect(Collectors.toList()).get(0);
 
             Node toNode = graph.stream()
-                    .filter(nodeLocal -> nodeLocal.getName() == ( graphFrom[iteratorFinal]> graphTo[iteratorFinal] ? graphFrom[iteratorFinal]: graphTo[iteratorFinal])      )
+                    .filter(nodeLocal -> nodeLocal.getName() ==  Math.max( graphFrom[iteratorFinal], graphTo[iteratorFinal])  )
                     .collect(Collectors.toList()).get(0);
 
             fromNode.getChildren().add(toNode);
