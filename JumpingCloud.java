@@ -10,6 +10,8 @@ import java.util.stream.*;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+//Challenge: https://www.hackerrank.com/challenges/jumping-on-the-clouds
+
 class ResultJumping {
 
     /*
