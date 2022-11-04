@@ -32,6 +32,11 @@ public class GraphFindShortest {
         System.out.println("val......................");
         System.out.println(val);
 
+        if(graphNodes > 1000000)
+            return -1;
+
+        if( (graphFrom.length != graphTo.length) || graphTo.length > 1000000 )
+            return -1;
 
         Long valInLong =(long)(val);
 
@@ -41,6 +46,9 @@ public class GraphFindShortest {
         int outerIterator = 0;
         int innerIterator = 0;
         for (Long item : idColorsArray) {
+            if (item > 1000)
+                return -1;
+
             if (item.equals(valInLong)) {
                 indexMatchColor.add(innerIterator);
             }
@@ -51,7 +59,6 @@ public class GraphFindShortest {
         System.out.println(Arrays.toString(indexMatchColor.toArray()));
 
         List<Node> graph = parseGraph(graphFrom, graphTo, idColorsArray);
-        //graph.forEach(System.out::println);
 
         if (indexMatchColor.size() <= 1)
             return returnValue;
