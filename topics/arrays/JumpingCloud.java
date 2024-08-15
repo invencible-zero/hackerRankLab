@@ -1,14 +1,9 @@
+package topics.arrays;
+
 import java.io.*;
-import java.math.*;
-import java.security.*;
-import java.text.*;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.*;
-import java.util.regex.*;
-import java.util.stream.*;
+
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 //Challenge: https://www.hackerrank.com/challenges/jumping-on-the-clouds
 
@@ -30,7 +25,7 @@ class ResultJumping {
 
             if( ((i+2)<c.size()) && (c.get(i+2) != 1))
                 i += 2;
-            else    
+            else
                 i += 1;
 
             jumps++;

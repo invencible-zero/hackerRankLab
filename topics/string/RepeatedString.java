@@ -1,14 +1,8 @@
+package topics.string;
+
 import java.io.*;
-import java.math.*;
-import java.security.*;
-import java.text.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.*;
-import java.util.regex.*;
-import java.util.stream.*;
+
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 //https://www.hackerrank.com/challenges/repeated-string/problem
 
@@ -26,18 +20,18 @@ class ResultRepeatedString {
     public static long repeatedString(String s, long n) {
     // Write your code here
         //long maxN = 1000000000000;
-        
+
         if(s.length() < 0 || s.length()>100)
             return 0;
-        
+
         if(n<1 )
             return 0;
-            
+
         //String parts[] = s.split("a",-1);
         long frecuency  = 0;
         long count = 0;
-        Double chunks = 0d;        
-        
+        Double chunks = 0d;
+
         for(int i=0; i < s.length(); i++ ){
             if( s.substring(i,i+1).equals("a") )
                 frecuency++;

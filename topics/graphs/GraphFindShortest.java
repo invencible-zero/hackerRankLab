@@ -1,3 +1,5 @@
+package topics.graphs;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -202,7 +204,7 @@ public class GraphFindShortest {
 
     public static void main(String[] args) throws IOException {
         //BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(System.getenv("OUTPUT_PATH")));
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("C:\\___d\\globant\\hackerRank\\outputs\\graph.txt"));
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("C:\\___d\\globant\\hRk\\outputs\\graph.txt"));
 
 
         String[] graphNodesEdges = scanner.nextLine().split(" ");
@@ -272,7 +274,7 @@ class Node {
 
     @Override
     public String toString() {
-        return "Node{" +
+        return "topics.graphs.Node{" +
                 "name='" + name + '\'' +
                 ", color=" + color +
                 ", children =" + children.stream().map(Object::toString).collect(Collectors.joining(", ")) +
