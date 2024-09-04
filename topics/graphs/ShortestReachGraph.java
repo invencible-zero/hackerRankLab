@@ -1,33 +1,20 @@
 package topics.graphs;
 
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.Set;
 
 
 //https://www.hackerrank.com/challenges/ctci-bfs-shortest-reach/problem?isFullScreen=true&h_l=interview&playlist_slugs%5B%5D=interview-preparation-kit&playlist_slugs%5B%5D=graphs
 
 public class ShortestReachGraph {
 
-    public static class Graph {
-
-
-        public Graph(int size) {
-
-        }
-
-        public void addEdge(int first, int second) {
-
-        }
-
-        public int[] shortestReach(int startId) { // 0 indexed
-            return new int[]{0,0};
-        }
-    }
-
     public static void print(Object object, String prefix){
         if(prefix == null)
-            prefix = "";
+            prefix = "\n";
         else
-            prefix = prefix + " ";
+            prefix = "\n"+prefix + " ";
         System.out.println(prefix + object);
     }
 
@@ -68,4 +55,57 @@ public class ShortestReachGraph {
     }
 
 
+}
+
+class Graph {
+
+    public int size;
+    public NodeSRG start;
+    Set<NodeSRG> nodeSRSet = new HashSet<NodeSRG>();
+
+    public Graph(int size) {
+        this.size = size;
+        for (int i=1; i<=size; i++){
+            nodeSRSet.add(new NodeSRG(i));
+        }
+    }
+
+    public void addEdge(int source, int destination) {
+
+        Optional<NodeSRG> sourceNode = nodeSRSet.stream()
+                .filter(item -> item.index == source  )
+                .findFirst();
+
+        Optional<NodeSRG> destinationNode = nodeSRSet.stream()
+                .filter(item -> item.index == destination  )
+                .findFirst();
+
+        if(sourceNode.isPresent() && destinationNode.isPresent()){
+            sourceNode.get().next = destinationNode.get();
+            destinationNode.get().prev = sourceNode.get();
+        }
+
+    }
+
+    public int[] shortestReach(int startId) {
+
+        NodeSRG startNode = nodeSRSet.stream()
+                .filter(item -> item.index == startId  )
+                .findFirst().get();
+
+        ShortestReachGraph.print(startNode, null);
+
+        return new int[]{0,0};
+    }
+}
+
+class NodeSRG{
+    int index;
+    NodeSRG next;
+    NodeSRG prev;
+    Boolean start = false;
+
+    public NodeSRG(int index){
+        this.index = index;
+    }
 }
