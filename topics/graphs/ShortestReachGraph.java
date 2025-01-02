@@ -2,6 +2,7 @@ package topics.graphs;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 //https://www.hackerrank.com/challenges/ctci-bfs-shortest-reach/problem?isFullScreen=true&h_l=interview&playlist_slugs%5B%5D=interview-preparation-kit&playlist_slugs%5B%5D=graphs
@@ -38,25 +39,34 @@ public class ShortestReachGraph {
 
             // Find shortest reach from node s
             int startId = scanner.nextInt();
+            long startTime = System.nanoTime(); // Record the start time
             graph.dijkstra(graph.nodeSRGList.stream().filter(_node -> _node.index == startId).findFirst().get());
+            IntStream.rangeClosed(1, graph.nodeSRGList.size())
+                    .forEach(number->{
+                        if (Objects.isNull(graph.summary.get(number))){
+                            graph.summary.put(number, -1);
+                        }
+                    });
 
-            graph.summary = graph.summary.entrySet().stream().map(entry->{
-                if (Objects.isNull(entry.getValue())) {entry.setValue(-1);}
-                return entry;
-            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             graph.summary.remove(startId);
+            graph.summary = new TreeMap<>(graph.summary);
 
+            StringBuilder output = new StringBuilder();
             for (Map.Entry<Integer, Integer> entry : graph.summary.entrySet() ) {
-                System.out.print(entry.getValue()+" ");
+                output.append(entry.getValue()+" ");
             }
-            //System.out.println("\n ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^  \n");
 
+            System.out.println(output.toString().trim());
+            System.out.println("\n ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^");
+
+            long endTime = System.nanoTime(); // Record the start time
+            Long timeTaken = (endTime - startTime);
+            System.out.println("\nTime taken: " + timeTaken.toString() + " seconds\n");
+            System.out.println(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\n");
         }
-        //System.out.println("\n END ...... \n");
+        System.out.println("\n END ...... \n");
         scanner.close();
     }
-
-
 }
 
 class Graph {
@@ -64,12 +74,15 @@ class Graph {
     List<NodeSRG> nodeSRGList = new ArrayList<>();
     public Map<Integer, TreeSet<Integer>> adjacencyList = new HashMap<>();
     public Set<Integer> visited = new HashSet<>();
-    public Map<Integer,Integer> summary = new TreeMap<>();
+    public Map<Integer,Integer> summary = new LinkedHashMap<>();
+    public Integer[] summaryArray;
 
     public Graph(int size) {
+        summaryArray = new Integer[size];
         for (int i=1; i<=size; i++){
             nodeSRGList.add(new NodeSRG(i));
-            summary.put(i,null);
+            //summary.put(i,null);
+            summaryArray[i-1] = null;
         }
     }
 
@@ -86,24 +99,17 @@ class Graph {
             sourceNode.get().neighborMap.put(destinationNode.get(), 6);
             destinationNode.get().neighborMap.put(sourceNode.get(), 6);
         }
-        /*
-        adjacencyList.computeIfAbsent(Integer.valueOf(source), s-> adjacencyList.put(Integer.valueOf(source), new TreeSet<>()));
-        adjacencyList.computeIfAbsent(Integer.valueOf(destination), d-> adjacencyList.put(Integer.valueOf(destination), new TreeSet<>()));
-
-        adjacencyList.get(Integer.valueOf(source)).add(Integer.valueOf(destination));
-        adjacencyList.get(Integer.valueOf(destination)).add(Integer.valueOf(source));*/
     }
 
-    public void dijkstra (NodeSRG pointerNode){
-        visited.add(Integer.valueOf(pointerNode.index));
+    public void dijkstraAndres (NodeSRG pointerNode){
+        visited.add(pointerNode.index);
 
-        //summary.putIfAbsent(Integer.valueOf(pointerNode.index),Integer.valueOf(0));
-        Integer pointerDistance = Objects.isNull(summary.get(Integer.valueOf(pointerNode.index)) ) ? 0 : summary.get(Integer.valueOf(pointerNode.index));
+        /*Integer pointerDistance = Objects.isNull(summary.get(pointerNode.index) ) ? 0 : summary.get(pointerNode.index);
 
         pointerNode.neighborMap.entrySet().stream()
                 .filter(_node -> !visited.contains(_node.getKey().index) )
                 .forEach (_node-> {
-                    Integer temporaryDistance =  pointerDistance + _node.getValue() ;
+                    Integer temporaryDistance =  pointerDistance + _node.getValue();
                     if(Objects.isNull(summary.get(_node.getKey().index)) || summary.get(_node.getKey().index) > temporaryDistance ){
                         summary.put(_node.getKey().index, temporaryDistance);
                     }
@@ -113,12 +119,64 @@ class Graph {
                 .filter(_entry -> !visited.contains(_entry.getKey()))
                 .filter(_entry -> _entry.getValue() != null)
                 .sorted(Comparator.comparing(Map.Entry::getValue, Comparator.nullsLast(Comparator.naturalOrder())))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, TreeMap::new));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+
+        */
+        Integer pointerDistance = summaryArray[pointerNode.index-1] == null ? 0 : summaryArray[pointerNode.index-1];
+
+        pointerNode.neighborMap.entrySet().stream()
+                .filter(_node -> !visited.contains(_node.getKey().index) )
+                .forEach (_node-> {
+                    Integer temporaryDistance =  pointerDistance + _node.getValue();
+                    if((summaryArray[_node.getKey().index-1] == null) || summaryArray[_node.getKey().index-1] > temporaryDistance ){
+                        summaryArray[_node.getKey().index-1] = temporaryDistance;
+                    }
+                });
+
+        LinkedHashMap<Integer, Integer> unvisited = IntStream.range(0, summaryArray.length)
+                .filter(index -> !visited.contains(index+1)) // Exclude visited indices
+                .filter(index -> summaryArray[index] != null) // Exclude null values
+                .boxed()
+                .sorted(Comparator.comparing(index -> summaryArray[index])) // Sort by value
+                .collect(Collectors.toMap(
+                        index -> index+1,                  // Key: index of the array
+                        index -> summaryArray[index],    // Value: value from the array
+                        (a, b) -> a,                     // Merge function (not needed since keys are unique)
+                        LinkedHashMap::new));            // Maintain insertion order
+
 
         unvisited.entrySet().forEach( _entry -> dijkstra(
                 nodeSRGList.stream().filter(_node -> _node.index == _entry.getKey()).findFirst().get()
         ));
 
+    }
+
+    public void dijkstra (NodeSRG startNode){
+        PriorityQueue<NodeSRG> priorityQueue = new PriorityQueue<>(
+                Comparator.comparingInt(node -> summary.getOrDefault(node.index, Integer.MAX_VALUE))
+        );
+        priorityQueue.add(startNode);
+        summary.put(startNode.index, 0);
+
+        while (!priorityQueue.isEmpty()) {
+            NodeSRG pointerNode = priorityQueue.poll();
+            int pointerDistance = summary.get(pointerNode.index);
+
+            for (Map.Entry<NodeSRG, Integer> neighborEntry : pointerNode.neighborMap.entrySet()) {
+                NodeSRG neighborNode = neighborEntry.getKey();
+                int edgeWeight = neighborEntry.getValue();
+
+                if (visited.contains(neighborNode.index)) continue;
+
+                int newDistance = pointerDistance + edgeWeight;
+                int currentDistance = summary.getOrDefault(neighborNode.index, Integer.MAX_VALUE);
+
+                if (newDistance < currentDistance) {
+                    summary.put(neighborNode.index, newDistance);
+                    priorityQueue.add(neighborNode);
+                }
+            }
+        }
     }
 }
 
